@@ -1,0 +1,58 @@
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, MessageHandler, Filters
+
+def start(update: Update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Мазалама мені! Мен нақтылап жатырмын...")
+
+def echo(update: Update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text=update.message.text)
+
+def help(update: Update, context):
+    context.bot.send_message(chat_id=update.effective_chat.id, text="Привет! Я бот, который может создавать стикеры по команде. Просто отправьте мне текстовое сообщение, и я превращу его в стикер! Используя команду /os")
+
+def create_sticker(update: Update, context):
+    message = update.effective_message
+    if message.reply_to_message and message.reply_to_message.sticker:
+        sticker_emojis = "😄"  # Эмодзи, которые будут использованы для стикера
+        sticker_pack_name = "DayekSoz"  # Имя стикерпака
+        sticker_set_name = "DayekSozStickerSet"  # Имя стикерсета
+
+        try:
+            context.bot.add_sticker_to_set(
+                user_id=update.effective_user.id,
+                name=sticker_pack_name,
+                emojis=sticker_emojis,
+                png_sticker=message.reply_to_message.sticker.file_id
+            )
+
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Стикер успешно создан и добавлен в стикерпак!"
+            )
+        except Exception as e:
+            context.bot.send_message(
+                chat_id=update.effective_chat.id,
+                text="Ошибка при создании стикера: {}".format(str(e))
+            )
+    else:
+        context.bot.send_message(
+            chat_id=update.effective_chat.id,
+            text="Не удалось создать стикер. Пожалуйста, ответьте на сообщение со стикером, чтобы я смог создать стикер."
+        )
+
+updater = Updater(token="6251814867:AAHqHHY-vwGKyVL8gPY91w_FjLqb3tNEjBk", use_context=True)
+dispatcher = updater.dispatcher
+
+start_handler = CommandHandler('start', start)
+dispatcher.add_handler(start_handler)
+
+echo_handler = MessageHandler(Filters.text & (~Filters.command), echo)
+dispatcher.add_handler(echo_handler)
+
+help_handler = CommandHandler('help', help)
+dispatcher.add_handler(help_handler)
+
+create_sticker_handler = CommandHandler('qos', create_sticker)
+dispatcher.add_handler(create_sticker_handler)
+
+updater.start_polling()

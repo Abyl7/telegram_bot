@@ -1,0 +1,51 @@
+import logging
+from telegram import Update
+from telegram.ext import Updater, CommandHandler, CallbackContext
+
+# Ваш токен бота, полученный от BotFather
+TOKEN = "6659841317:AAET3-h7f6-r1Iy_kaXnLoTV8akC48UbVE4"
+
+# Включение логгирования для отслеживания ошибок
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
+
+def mention_everyone(update: Update, context: CallbackContext) -> None:
+    """Отметить всех участников группы."""
+    chat_id = update.effective_chat.id
+
+    # Получение информации о чате
+    chat = update.effective_chat
+
+    # Получение количества участников группы
+    member_count = chat.get_chat_members_count()
+
+    # Получение информации о каждом участнике
+    members = []
+    for user_id in range(1, member_count + 1):
+        member = chat.get_chat_member(user_id)
+        members.append(member)
+
+    # Используйте print() для вывода доступных атрибутов и методов в объекте Chat
+    print(dir(chat))
+
+    # Формирование строки с упоминаниями всех участников
+    mention_string = " ".join([f"@{member.user.username}" if member.user.username else member.user.first_name for member in members])
+
+    update.message.reply_text(f"{mention_string}! Вас вызывают!")
+
+def main() -> None:
+    """Запуск бота."""
+    updater = Updater(TOKEN)
+
+    dispatcher = updater.dispatcher
+
+    # Обработчик команды /all
+    dispatcher.add_handler(CommandHandler("all", mention_everyone))
+
+    # Запуск бота
+    updater.start_polling()
+
+    # Запуск прослушивания сигналов завершения
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
